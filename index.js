@@ -1015,12 +1015,37 @@ var errors = {
   },
   emptyResponse: function() {
     return new Error('Unexpected empty response');
+  },
+  abortedResponse: function() {
+    return new Error('Request was aborted by Salesforce');
   }
+}
+
+var chunkedRequest = function (options, callback) {
+  return request(options)
+    .on('response', function (response) {
+      var raw = '';
+
+      response.on('data', function (chunk) {
+        raw += chunk;
+      });
+
+      response.on('end', function () {
+        callback(null, response, raw);
+      });
+
+      response.on('aborted', function () {
+        callback(errors.abortedResponse());
+      });
+
+      response.on('error', callback);
+    })
+    .on('error', callback);
 }
 
 var apiAuthRequest = function(opts, callback) {
   var self = this;
-  return request(opts, function(err, res, body){
+  return chunkedRequest(opts, function(err, res, body){
     // request returned an error
     if(err) return callback(err);
 
@@ -1057,7 +1082,7 @@ var apiBlobRequest = function(opts, oauth, callback) {
     'Authorization': 'Bearer ' + oauth.access_token
   }
 
-  return request(opts, function(err, res, body) {
+  return chunkedRequest(opts, function(err, res, body) {
     // request returned an error
     if(err) return callback(err, null);
 
@@ -1109,7 +1134,7 @@ var apiRequest = function(opts, oauth, sobject, callback) {
     opts.headers['content-type'] = 'application/json';
   }
   
-  return request(opts, function(err, res, body) {
+  return chunkedRequest(opts, function(err, res, body) {
     
     // request returned an error
     if(err) return callback(err, null);
