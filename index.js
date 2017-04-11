@@ -11,10 +11,8 @@ var mime        = require('mime');
 
 // constants
 
-var AUTH_ENDPOINT      = 'https://login.salesforce.com/services/oauth2/authorize';
-var TEST_AUTH_ENDPOINT = 'https://test.salesforce.com/services/oauth2/authorize';
-var LOGIN_URI          = 'https://login.salesforce.com/services/oauth2/token';
-var TEST_LOGIN_URI     = 'https://test.salesforce.com/services/oauth2/token';
+var ENDPOINT      = 'https://login.salesforce.com';
+var TEST_ENDPOINT = 'https://test.salesforce.com';
 var API_VERSIONS       = ['v20.0', 'v21.0', 'v22.0', 'v23.0', 'v24.0', 'v25.0', 'v26.0', 'v27.0', 'v28.0'];
 
 // nforce connection object
@@ -36,11 +34,11 @@ var Connection = function(opts) {
   } else {
     this.redirectUri = opts.redirectUri;
   }
-  // Allow custom login and test uris to be passed in
-  // Addresses issue #5
-  // @zachelrath 11/13/12
-  opts.loginUri && (LOGIN_URI = opts.loginUri);
-  opts.testLoginUri && (TEST_LOGIN_URI = opts.testLoginUri);
+
+  this.authEndpoint = (opts.loginUri || ENDPOINT) + '/services/oauth2/authorize';
+  this.testAuthEndpoint = (opts.loginUri || TEST_ENDPOINT) + '/services/oauth2/authorize';
+  this.loginUri = (opts.loginUri || ENDPOINT) + '/services/oauth2/token';
+  this.testLoginUri = (opts.loginUri || TEST_ENDPOINT) + '/services/oauth2/token';
 
   if(typeof opts.cacheMetadata !== 'undefined') {
     if(typeof opts.cacheMetadata !== 'boolean') throw new Error('cacheMetadata must be a boolean');
@@ -125,9 +123,9 @@ Connection.prototype.getAuthUri = function(opts) {
   }
 
   if(self.environment == 'sandbox') {
-    return TEST_AUTH_ENDPOINT + '?' + qs.stringify(urlOpts);
+    return self.testAuthEndpoint + '?' + qs.stringify(urlOpts);
   } else {
-    return AUTH_ENDPOINT + '?' + qs.stringify(urlOpts);
+    return self.authEndpoint + '?' + qs.stringify(urlOpts);
   }
 }
 
@@ -159,7 +157,7 @@ Connection.prototype.authenticate = function(opts, callback) {
     return callback(new Error('You must either supply a code, or username and password'));
   }
 
-  uri = (self.environment == 'sandbox') ? TEST_LOGIN_URI : LOGIN_URI;
+  uri = (self.environment == 'sandbox') ? self.testLoginUri : self.loginUri;
 
   reqOpts = {
     uri: uri,
@@ -198,7 +196,7 @@ Connection.prototype.refreshToken = function(oauth, callback) {
     'refresh_token': oauth.refresh_token
   }
 
-  uri = (self.environment == 'sandbox') ? TEST_LOGIN_URI : LOGIN_URI;
+  uri = (self.environment == 'sandbox') ? self.testLoginUri : self.loginUri;
 
   reqOpts = {
     uri: uri,
