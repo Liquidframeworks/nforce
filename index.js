@@ -1020,6 +1020,30 @@ var errors = {
 }
 
 var chunkedRequest = function (options, callback) {
+  return _chunkedRequest(options, function (err, res, body) {
+    var isTimeout = err && err.code === 'ETIMEDOUT';
+    var statusCode = res && res.statusCode;
+
+    if (isTimeout || statusCode >= 500) {
+      var message = 'Retrying Failed Request:';
+
+      if (isTimeout) {
+        message = 'Retrying Response Timeout:';
+
+        if (err && err.connect === true) {
+          message = 'Retrying Connection Timeout:';
+        }
+      }
+
+      console.log(message, options.uri, statusCode);
+      return _chunkedRequest(options, callback);
+    }
+
+    callback(err, res, body);
+  });
+}
+
+var _chunkedRequest = function (options, callback) {
   return request(options)
     .on('response', function (response) {
       var raw = '';
