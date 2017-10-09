@@ -1222,5 +1222,6 @@ module.exports.createSObject = function(type, fields) {
   return rec;
 }
 
+module.exports.chunkedRequest = chunkedRequest;
 module.exports.Record = Record;
 module.exports.version = require('./package.json').version;
