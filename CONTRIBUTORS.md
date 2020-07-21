@@ -1,4 +1,4 @@
-## Contributors
+# Contributors
 
 * Kevin O'Hara -> [kevinohara80](https://github.com/kevinohara80)
 * Jeff Douglas -> [jeffdonthemic](https://github.com/jeffdonthemic)
@@ -26,3 +26,4 @@
 * Caleb Everett -> [CalebEverett](https://github.com/CalebEverett)
 * Laboratory -> [Laboratory](https://github.com/Laboratory)
 * Kessiler -> [kessiler](https://github.com/kessiler)
+* Vineet Sinha -> [vineet-sinha](https://github.com/vineet-sinha)
